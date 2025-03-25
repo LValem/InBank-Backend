@@ -91,6 +91,6 @@ These inconsistencies made the code harder to read, maintain, and scale.
 ### 4. FrontEnd Code Review
 
 **Continues in the frontend repo**
-https://github.com/LValem/InBank-Frontend
+https://github.com/LValem/InBank-Frontend/blob/main/REVIEW.md
 
 ---

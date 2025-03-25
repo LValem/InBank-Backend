@@ -23,5 +23,10 @@ public class DecisionEngineConstants {
     public static final String AN_UNEXPECTED_ERROR_OCCURRED = "An unexpected error occurred";
     public static final String NO_VALID_LOAN_FOUND_FOR_THE_PROVIDED_PARAMETERS = "No valid loan found for the" +
             " provided parameters.";
+    public static final String INVALID_AGE_ERROR = "Age doesn't match requirements for this country!";
     public static final double SCORE_DIVISOR = 10.0;
+    public static final int MINIMUM_AGE = 21;
+    public static final int ESTONIA_MAXIMUM = 80;
+    public static final int LATVIA_MAXIMUM = 75;
+    public static final int LITHUANIA_MAXIMUM = 85;
 }
