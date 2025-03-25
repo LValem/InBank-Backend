@@ -1,12 +1,12 @@
 package ee.taltech.inbankbackend.endpoint;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 /**
  * Holds the request data of the REST endpoint
  */
-@Getter
+@Data
 @AllArgsConstructor
 public class DecisionRequest {
     private String personalCode;

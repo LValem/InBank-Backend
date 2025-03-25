@@ -11,8 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class DecisionEngineTest {
@@ -59,6 +58,7 @@ class DecisionEngineTest {
     void testSegment3PersonalCode() throws InvalidLoanPeriodException, NoValidLoanException,
             InvalidPersonalCodeException, InvalidLoanAmountException {
         Decision decision = decisionEngine.calculateApprovedLoan(segment3PersonalCode, 4000L, 12);
+
         assertEquals(10000, decision.getLoanAmount());
         assertEquals(12, decision.getLoanPeriod());
     }
@@ -66,32 +66,46 @@ class DecisionEngineTest {
     @Test
     void testInvalidPersonalCode() {
         String invalidPersonalCode = "12345678901";
-        assertThrows(InvalidPersonalCodeException.class,
-                () -> decisionEngine.calculateApprovedLoan(invalidPersonalCode, 4000L, 12));
+
+        Decision decision = decisionEngine.calculateApprovedLoan(invalidPersonalCode, 4000L, 12);
+
+        assertNull(decision.getLoanAmount());
+        assertNull(decision.getLoanPeriod());
+        assertEquals(DecisionEngineConstants.INVALID_PERSONAL_ID_CODE, decision.getErrorMessage());
     }
 
     @Test
-    void testInvalidLoanAmount() {
+    void testInvalidLoanAmountTooLow() {
         Long tooLowLoanAmount = DecisionEngineConstants.MINIMUM_LOAN_AMOUNT - 1L;
+
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, tooLowLoanAmount, 12);
+        assertEquals(DecisionEngineConstants.INVALID_LOAN_AMOUNT, decision.getErrorMessage());
+    }
+
+    @Test
+    void testInvalidLoanAmountTooHigh() {
         Long tooHighLoanAmount = DecisionEngineConstants.MAXIMUM_LOAN_AMOUNT + 1L;
 
-        assertThrows(InvalidLoanAmountException.class,
-                () -> decisionEngine.calculateApprovedLoan(segment1PersonalCode, tooLowLoanAmount, 12));
-
-        assertThrows(InvalidLoanAmountException.class,
-                () -> decisionEngine.calculateApprovedLoan(segment1PersonalCode, tooHighLoanAmount, 12));
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, tooHighLoanAmount, 12);
+        assertEquals(DecisionEngineConstants.INVALID_LOAN_AMOUNT, decision.getErrorMessage());
     }
 
     @Test
-    void testInvalidLoanPeriod() {
+    void testInvalidLoanPeriodTooShort() {
         int tooShortLoanPeriod = DecisionEngineConstants.MINIMUM_LOAN_PERIOD - 1;
+
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, 4000L,
+                tooShortLoanPeriod);
+        assertEquals(DecisionEngineConstants.INVALID_LOAN_PERIOD, decision.getErrorMessage());
+    }
+
+    @Test
+    void testInvalidLoanPeriodTooLong() {
         int tooLongLoanPeriod = DecisionEngineConstants.MAXIMUM_LOAN_PERIOD + 1;
 
-        assertThrows(InvalidLoanPeriodException.class,
-                () -> decisionEngine.calculateApprovedLoan(segment1PersonalCode, 4000L, tooShortLoanPeriod));
-
-        assertThrows(InvalidLoanPeriodException.class,
-                () -> decisionEngine.calculateApprovedLoan(segment1PersonalCode, 4000L, tooLongLoanPeriod));
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, 4000L,
+                tooLongLoanPeriod);
+        assertEquals(DecisionEngineConstants.INVALID_LOAN_PERIOD, decision.getErrorMessage());
     }
 
     @Test
@@ -104,9 +118,9 @@ class DecisionEngineTest {
 
     @Test
     void testNoValidLoanFound() {
-        assertThrows(NoValidLoanException.class,
-                () -> decisionEngine.calculateApprovedLoan(debtorPersonalCode, 10000L, 60));
+        NoValidLoanException exception = assertThrows(NoValidLoanException.class,
+                () -> decisionEngine.calculateApprovedLoan(debtorPersonalCode, 10000L, 12));
+
+        assertEquals(DecisionEngineConstants.APPLICANT_HAS_DEBT, exception.getMessage());
     }
-
 }
-
