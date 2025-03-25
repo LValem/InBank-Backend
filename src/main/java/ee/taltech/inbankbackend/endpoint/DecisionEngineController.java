@@ -1,9 +1,6 @@
 package ee.taltech.inbankbackend.endpoint;
 
-import ee.taltech.inbankbackend.exceptions.InvalidLoanAmountException;
-import ee.taltech.inbankbackend.exceptions.InvalidLoanPeriodException;
-import ee.taltech.inbankbackend.exceptions.InvalidPersonalCodeException;
-import ee.taltech.inbankbackend.exceptions.NoValidLoanException;
+import ee.taltech.inbankbackend.exceptions.*;
 import ee.taltech.inbankbackend.service.Decision;
 import ee.taltech.inbankbackend.service.DecisionEngine;
 import ee.taltech.inbankbackend.config.DecisionEngineConstants;
@@ -53,7 +50,8 @@ public class DecisionEngineController {
 
         try {
             Decision decision = decisionEngine
-                    .calculateApprovedLoan(request.getPersonalCode(), request.getLoanAmount(), request.getLoanPeriod());
+                    .calculateApprovedLoan(request.getPersonalCode(), request.getLoanAmount(), request.getLoanPeriod(),
+                            request.getCountry());
 
             response.setLoanAmount(decision.getLoanAmount());
             response.setLoanPeriod(decision.getLoanPeriod());
@@ -61,7 +59,8 @@ public class DecisionEngineController {
 
             return ResponseEntity.ok(response);
 
-        } catch (InvalidPersonalCodeException | InvalidLoanAmountException | InvalidLoanPeriodException e) {
+        } catch (InvalidPersonalCodeException | InvalidLoanAmountException | InvalidLoanPeriodException |
+                 InvalidAgeException e) {
             response.setErrorMessage(e.getMessage());
             return ResponseEntity.badRequest().body(response);
 

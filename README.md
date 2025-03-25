@@ -2,7 +2,7 @@
 
 This service provides a REST API for calculating an approved loan amount and period for a customer.
 The loan amount is calculated based on the customer's credit modifier, which is determined by the last four
-digits of their ID code.
+digits of their ID code and age based on the country.
 
 ## Technologies Used
 
@@ -37,6 +37,7 @@ The request body must contain the following fields:
 - personalCode: The customer's personal ID code.
 - loanAmount: The requested loan amount.
 - loanPeriod: The requested loan period.
+- country: Country where customer wants to apply for loan.
 
 **Request example:**
 
@@ -44,7 +45,8 @@ The request body must contain the following fields:
 {
 "personalCode": "50307172740",
 "loanAmount": "5000",
-"loanPeriod": "24"
+"loanPeriod": "24",
+"country": "Estonia"
 }
 ```
 
@@ -64,6 +66,26 @@ The response body contains the following fields:
 }
 ```
 
+**Restrictions:**
+
+```json
+{
+"minimum age": 21,
+"maximum age for estonia": 80, 
+"maximum age for latvia": 75,
+"maximum age for lithuania": 85
+}
+```
+
+```json
+{
+"minimum amount": 2000,
+"maximum amount": 10000,
+"minimum period in months": 12,
+"maximum period in months": 48
+}
+```
+
 ## Error Handling
 
 The following error responses can be returned by the service:
@@ -72,6 +94,7 @@ The following error responses can be returned by the service:
     - `Invalid personal ID code!` - if the provided personal ID code is invalid
     - `Invalid loan amount!` - if the requested loan amount is invalid
     - `Invalid loan period!` - if the requested loan period is invalid
+    - `Invalid age!` - if the age is not suitable for selected country
 - `404 Not Found` - in case no valid loans can be found
     - `No valid loan found!` - if there is no valid loan found for the given ID code, loan amount, and loan period
 - `500 Internal Server Error` - in case the server encounters an unexpected error while processing the request
@@ -81,5 +104,6 @@ The following error responses can be returned by the service:
 
 The service consists of two main classes:
 
-- DecisionEngine: A service class that provides a method for calculating an approved loan amount and period for a customer.
+- DecisionEngine: A service class that provides a method for calculating an approved loan amount and
+  period for a customer.
 - DecisionEngineController: A REST endpoint that handles requests for loan decisions.
