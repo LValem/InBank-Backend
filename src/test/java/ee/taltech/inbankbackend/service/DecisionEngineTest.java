@@ -16,15 +16,21 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class DecisionEngineTest {
 
+    private static final long LOAN_AMOUNT_4000 = 4000L;
+    private static final int LOAN_PERIOD_12 = 12;
+    private static final long LOAN_AMOUNT_2000 = 2000L;
+    private static final long LOAN_AMOUNT_10000 = 10000L;
+    private static final int EXPECTED_3600 = 3600;
+    private static final int EXPECTED_2000 = 2000;
+    private static final int EXPECTED_PERIOD_20 = 20;
+    private static final int EXPECTED_PERIOD_12 = 12;
+    private static final int EXPECTED_10000 = 10000;
     @InjectMocks
     private DecisionEngine decisionEngine;
     private String debtorPersonalCode;
     private String segment1PersonalCode;
     private String segment2PersonalCode;
     private String segment3PersonalCode;
-    private String estonia;
-    private String latvia;
-    private String lithuania;
     private String underagePersonalCode;
     private String overagePersonalCodeEstonia;
     private String overagePersonalCodeLatvia;
@@ -35,9 +41,6 @@ class DecisionEngineTest {
         segment1PersonalCode = "50307172740";
         segment2PersonalCode = "38411266610";
         segment3PersonalCode = "35006069515";
-        estonia = "estonia";
-        latvia = "latvia";
-        lithuania = "lithuania";
         underagePersonalCode = "50802085080";
         overagePersonalCodeEstonia = "34403255473";
         overagePersonalCodeLatvia = "34903254088";
@@ -47,43 +50,44 @@ class DecisionEngineTest {
     @Test
     void testDebtorPersonalCode() {
         assertThrows(NoValidLoanException.class,
-                () -> decisionEngine.calculateApprovedLoan(debtorPersonalCode, 4000L, 12, estonia));
+                () -> decisionEngine.calculateApprovedLoan(debtorPersonalCode, LOAN_AMOUNT_4000, LOAN_PERIOD_12,
+                        Countries.ESTONIA));
     }
 
     @Test
     void testSegment1PersonalCode() throws InvalidLoanPeriodException, NoValidLoanException,
             InvalidPersonalCodeException, InvalidLoanAmountException {
-        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, 4000L, 12,
-                estonia);
-        assertEquals(2000, decision.getLoanAmount());
-        assertEquals(20, decision.getLoanPeriod());
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, LOAN_AMOUNT_4000,
+                LOAN_PERIOD_12, Countries.ESTONIA);
+        assertEquals(EXPECTED_2000, decision.getLoanAmount());
+        assertEquals(EXPECTED_PERIOD_20, decision.getLoanPeriod());
     }
 
     @Test
     void testSegment2PersonalCode() throws InvalidLoanPeriodException, NoValidLoanException,
             InvalidPersonalCodeException, InvalidLoanAmountException {
-        Decision decision = decisionEngine.calculateApprovedLoan(segment2PersonalCode, 4000L, 12,
-                estonia);
-        assertEquals(3600, decision.getLoanAmount());
-        assertEquals(12, decision.getLoanPeriod());
+        Decision decision = decisionEngine.calculateApprovedLoan(segment2PersonalCode, LOAN_AMOUNT_4000,
+                LOAN_PERIOD_12, Countries.ESTONIA);
+        assertEquals(EXPECTED_3600, decision.getLoanAmount());
+        assertEquals(LOAN_PERIOD_12, decision.getLoanPeriod());
     }
 
     @Test
     void testSegment3PersonalCode() throws InvalidLoanPeriodException, NoValidLoanException,
             InvalidPersonalCodeException, InvalidLoanAmountException {
-        Decision decision = decisionEngine.calculateApprovedLoan(segment3PersonalCode, 4000L, 12,
-                estonia);
+        Decision decision = decisionEngine.calculateApprovedLoan(segment3PersonalCode, LOAN_AMOUNT_4000,
+                LOAN_PERIOD_12, Countries.ESTONIA);
 
-        assertEquals(10000, decision.getLoanAmount());
-        assertEquals(12, decision.getLoanPeriod());
+        assertEquals(EXPECTED_10000, decision.getLoanAmount());
+        assertEquals(EXPECTED_PERIOD_12, decision.getLoanPeriod());
     }
 
     @Test
     void testInvalidPersonalCode() {
         String invalidPersonalCode = "12345678901";
 
-        Decision decision = decisionEngine.calculateApprovedLoan(invalidPersonalCode, 4000L, 12,
-                latvia);
+        Decision decision = decisionEngine.calculateApprovedLoan(invalidPersonalCode, LOAN_AMOUNT_4000,
+                LOAN_PERIOD_12, Countries.LATVIA);
 
         assertNull(decision.getLoanAmount());
         assertNull(decision.getLoanPeriod());
@@ -94,8 +98,8 @@ class DecisionEngineTest {
     void testInvalidLoanAmountTooLow() {
         Long tooLowLoanAmount = DecisionEngineConstants.MINIMUM_LOAN_AMOUNT - 1L;
 
-        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, tooLowLoanAmount, 12,
-                lithuania);
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, tooLowLoanAmount,
+                LOAN_PERIOD_12, Countries.LITHUANIA);
         assertEquals(DecisionEngineConstants.INVALID_LOAN_AMOUNT, decision.getErrorMessage());
     }
 
@@ -103,8 +107,8 @@ class DecisionEngineTest {
     void testInvalidLoanAmountTooHigh() {
         Long tooHighLoanAmount = DecisionEngineConstants.MAXIMUM_LOAN_AMOUNT + 1L;
 
-        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, tooHighLoanAmount, 12,
-                estonia);
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, tooHighLoanAmount,
+                LOAN_PERIOD_12, Countries.ESTONIA);
         assertEquals(DecisionEngineConstants.INVALID_LOAN_AMOUNT, decision.getErrorMessage());
     }
 
@@ -112,8 +116,8 @@ class DecisionEngineTest {
     void testInvalidLoanPeriodTooShort() {
         int tooShortLoanPeriod = DecisionEngineConstants.MINIMUM_LOAN_PERIOD - 1;
 
-        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, 4000L,
-                tooShortLoanPeriod, latvia);
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, LOAN_AMOUNT_4000,
+                tooShortLoanPeriod, Countries.LATVIA);
         assertEquals(DecisionEngineConstants.INVALID_LOAN_PERIOD, decision.getErrorMessage());
     }
 
@@ -121,25 +125,25 @@ class DecisionEngineTest {
     void testInvalidLoanPeriodTooLong() {
         int tooLongLoanPeriod = DecisionEngineConstants.MAXIMUM_LOAN_PERIOD + 1;
 
-        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, 4000L,
-                tooLongLoanPeriod, lithuania);
+        Decision decision = decisionEngine.calculateApprovedLoan(segment1PersonalCode, LOAN_AMOUNT_4000,
+                tooLongLoanPeriod, Countries.LITHUANIA);
         assertEquals(DecisionEngineConstants.INVALID_LOAN_PERIOD, decision.getErrorMessage());
     }
 
     @Test
     void testFindSuitableLoanPeriod() throws InvalidLoanPeriodException, NoValidLoanException,
             InvalidPersonalCodeException, InvalidLoanAmountException {
-        Decision decision = decisionEngine.calculateApprovedLoan(segment2PersonalCode, 2000L, 12,
-                estonia);
-        assertEquals(3600, decision.getLoanAmount());
-        assertEquals(12, decision.getLoanPeriod());
+        Decision decision = decisionEngine.calculateApprovedLoan(segment2PersonalCode, LOAN_AMOUNT_2000,
+                LOAN_PERIOD_12, Countries.ESTONIA);
+        assertEquals(EXPECTED_3600, decision.getLoanAmount());
+        assertEquals(EXPECTED_PERIOD_12, decision.getLoanPeriod());
     }
 
     @Test
     void testNoValidLoanFound() {
         NoValidLoanException exception = assertThrows(NoValidLoanException.class,
-                () -> decisionEngine.calculateApprovedLoan(debtorPersonalCode, 10000L, 12,
-                        estonia));
+                () -> decisionEngine.calculateApprovedLoan(debtorPersonalCode, LOAN_AMOUNT_10000,
+                        LOAN_PERIOD_12, Countries.ESTONIA));
 
         assertEquals(DecisionEngineConstants.APPLICANT_HAS_DEBT, exception.getMessage());
     }
@@ -147,7 +151,7 @@ class DecisionEngineTest {
     @Test
     void testValidLoanFoundInEstonia() {
         Decision decision = decisionEngine.calculateApprovedLoan(segment3PersonalCode,
-                2000L, 12, estonia);
+                LOAN_AMOUNT_2000, LOAN_PERIOD_12, Countries.ESTONIA);
 
         assertNotNull(decision.getLoanAmount());
         assertNotNull(decision.getLoanPeriod());
@@ -157,7 +161,7 @@ class DecisionEngineTest {
     @Test
     void testValidLoanFoundInLatvia() {
         Decision decision = decisionEngine.calculateApprovedLoan(segment3PersonalCode,
-                2000L, 12, latvia);
+                LOAN_AMOUNT_2000, LOAN_PERIOD_12, Countries.LATVIA);
 
         assertNotNull(decision.getLoanAmount());
         assertNotNull(decision.getLoanPeriod());
@@ -167,7 +171,7 @@ class DecisionEngineTest {
     @Test
     void testValidLoanFoundInLithuania() {
         Decision decision = decisionEngine.calculateApprovedLoan(segment3PersonalCode,
-                2000L, 12, lithuania);
+                LOAN_AMOUNT_2000, LOAN_PERIOD_12, Countries.LITHUANIA);
 
         assertNotNull(decision.getLoanAmount());
         assertNotNull(decision.getLoanPeriod());
@@ -177,7 +181,7 @@ class DecisionEngineTest {
     @Test
     void testUnderageApplicant() {
         Decision decision = decisionEngine.calculateApprovedLoan(underagePersonalCode,
-                4000L, 12, estonia);
+                LOAN_AMOUNT_4000, LOAN_PERIOD_12, Countries.ESTONIA);
 
         assertNull(decision.getLoanAmount());
         assertNull(decision.getLoanPeriod());
@@ -187,7 +191,7 @@ class DecisionEngineTest {
     @Test
     void testOverageApplicantEstonia() {
         Decision decision = decisionEngine.calculateApprovedLoan(overagePersonalCodeEstonia,
-                4000L, 12, estonia);
+                LOAN_AMOUNT_4000, LOAN_PERIOD_12, Countries.ESTONIA);
 
         assertNull(decision.getLoanAmount());
         assertNull(decision.getLoanPeriod());
@@ -197,7 +201,7 @@ class DecisionEngineTest {
     @Test
     void testOverageApplicantLatvia() {
         Decision decision = decisionEngine.calculateApprovedLoan(overagePersonalCodeLatvia,
-                4000L, 12, latvia);
+                LOAN_AMOUNT_4000, LOAN_PERIOD_12, Countries.LATVIA);
 
         assertNull(decision.getLoanAmount());
         assertNull(decision.getLoanPeriod());
@@ -207,7 +211,7 @@ class DecisionEngineTest {
     @Test
     void testOverageApplicantLithuania() {
         Decision decision = decisionEngine.calculateApprovedLoan(overagePersonalCodeLithuania,
-                4000L, 12, lithuania);
+                LOAN_AMOUNT_4000, LOAN_PERIOD_12, Countries.LITHUANIA);
 
         assertNull(decision.getLoanAmount());
         assertNull(decision.getLoanPeriod());
@@ -217,7 +221,7 @@ class DecisionEngineTest {
     @Test
     void testNotValidCountry() {
         Decision decision = decisionEngine.calculateApprovedLoan(overagePersonalCodeLithuania,
-                4000L, 12, "Finland");
+                LOAN_AMOUNT_4000, LOAN_PERIOD_12, Countries.FINLAND);
         assertEquals(DecisionEngineConstants.INVALID_AGE_ERROR, decision.getErrorMessage());
     }
 }

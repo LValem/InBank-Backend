@@ -36,7 +36,7 @@ public class DecisionEngine {
      * @throws InvalidLoanPeriodException If the requested loan period is invalid
      * @throws NoValidLoanException If there is no valid loan found for the given ID code, loan amount and loan period
      */
-    public Decision calculateApprovedLoan(String personalCode, Long loanAmount, int loanPeriod, String country)
+    public Decision calculateApprovedLoan(String personalCode, Long loanAmount, int loanPeriod, Countries country)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException,
             NoValidLoanException {
 
@@ -182,7 +182,7 @@ public class DecisionEngine {
      * @throws InvalidLoanAmountException   If the requested loan amount is invalid
      * @throws InvalidLoanPeriodException   If the requested loan period is invalid
      */
-    private void verifyInputs(String personalCode, Long loanAmount, int loanPeriod, String country)
+    private void verifyInputs(String personalCode, Long loanAmount, int loanPeriod, Countries country)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException,
             PersonalCodeException {
 
@@ -215,21 +215,20 @@ public class DecisionEngine {
      * @return true if the age is within the valid range, false otherwise.
      * @throws PersonalCodeException If the personal code is invalid.
      */
-    private boolean checkAge(String personalCode, String country) throws PersonalCodeException {
+    private boolean checkAge(String personalCode, Countries country) throws PersonalCodeException {
         try {
             Period age = parser.getAge(personalCode);
             int years = age.getYears();
-
             int maxAge;
 
-            switch (country.toLowerCase()) {
-                case "estonia":
+            switch (country) {
+                case ESTONIA:
                     maxAge = DecisionEngineConstants.ESTONIA_MAXIMUM;
                     break;
-                case "latvia":
+                case LATVIA:
                     maxAge = DecisionEngineConstants.LATVIA_MAXIMUM;
                     break;
-                case "lithuania":
+                case LITHUANIA:
                     maxAge = DecisionEngineConstants.LITHUANIA_MAXIMUM;
                     break;
                 default:
